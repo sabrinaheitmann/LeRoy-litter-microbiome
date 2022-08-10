@@ -1,5 +1,5 @@
 LeRoy
-	miseq_test.Rproj
+	LeRoy_project.Rproj
 	processing_code - makefile
 	code 
 		compile_16S.R - remove host contamination, cluster OTUs, assign taxonomy of 16S seqs (DECIPHER) [3]
