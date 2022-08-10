@@ -1,0 +1,41 @@
+Make sure you are in Projects/LeRoy directory
+
+#### DOWNLOAD DEMULTIPLEXED READS ####
+
+scp -P 732 heitmans@files.cgrb.oregonstate.edu:/nfs2/hts/miseq/220112_M01498_0872_000000000-K4PKW/L1/*P* output/demux
+
+#Remove all files in demux folder that contain "P06" (these are Scott's samples so we will remove from Carri's dataset)
+find -type f -name '*text*' -delete
+
+#Rename demultiplexed files so the trim.sh code will run
+rename 's/lane1-s.*-index--.*-.*-//' *
+rename 's/_001//' *
+rename 's/S.*_//' *
+rename 's/_R/\.R/' *
+
+
+#### TRIMMING PRIMERS AND ADAPTORS ####
+
+code/trim.sh
+
+#Manually remove spurious reads (reads that were recognized by the wrong primer) from output/trim/16S/bact and move them to a new folder output/trim/spurious_trims
+
+
+#### DENOISING SAMPLES USING DADA2 ####
+
+Rscript code/denoise_ITS1.R  
+
+Rscript code/denoise_ITS2.R 
+
+Rscript code/denoise_16S.R
+
+
+#### COMPILE INTO PHYLOSEQ OBJECT ####
+ 
+Run Rscript compile_ITS1.R
+
+Run Rscript compile_ITS2.R
+
+Run Rscript compile_16S.R
+
+# Phyloseq objects are located in output/phy_ITS1, output/phy_ITS2, and output/phy_16S along with taxonomy, OTU table, and sample data CSVs for each primer pair.

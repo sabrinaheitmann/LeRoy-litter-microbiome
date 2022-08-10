@@ -1,0 +1,90 @@
+---
+title: "Untitled"
+author: "Sabrina Heitmann"
+date: "4/3/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(magrittr)
+library(dada2)
+library(ShortRead)
+library(phyloseq)
+library(Biostrings)
+library(ggplot2)
+library(stringr)
+library(readxl)
+library(ggthemes)
+# these last two packages are to knit certain visual aids in this markdown
+library(knitr)
+library(kableExtra)
+```
+
+Negative controls
+```{r}
+# Read in phyloseq object
+(phy <- readRDS("output/phy_ITS2/phy_ITS2.rds"))
+
+# subsetting the phyloseq into controls and samples
+neg_control.phy <- subset_samples(phy, sample=="neg")
+pos_control.phy <- subset_samples(phy, sample=="pos")
+samps.phy <- subset_samples(phy, sample != "neg" & sample != "pos") 
+
+# creating a table
+#percent seqs negative = highlighting OTUs where 6% or more of reads are in the controls 
+neg_control.phy.tab <- tax_table(neg_control.phy) %>% data.frame %>% 
+  transmute(
+    OTU=taxa_names(neg_control.phy),
+    totSeqs=taxa_sums(phy %>% prune_taxa(taxa_names(neg_control.phy),.)),
+    totNegSeqs = taxa_sums(neg_control.phy),
+    pctSeqsNeg = round((100*totNegSeqs/totSeqs),4),
+    Genus=Genus
+  )
+controls.head.tab <- subset(neg_control.phy.tab, pctSeqsNeg>0)
+controls.head.tab %>% kable(caption = "OTUs in negative controls, putative contaminants highlighted (OTUs not in negative controls omitted)") %>%
+  kable_styling(full_width = F) %>% 
+  row_spec(which(controls.head.tab$pctSeqsNeg>6), background = "#FFCCCC")
+```
+
+Positive control worked - similar fungi as Sabrina's sample is present
+```{r}
+# creating a table
+#percent seqs negative = highlighting OTUs where 6% or more of reads are in the controls 
+pos_control.phy.tab <- tax_table(pos_control.phy) %>% data.frame %>% 
+  transmute(
+    OTU=taxa_names(pos_control.phy),
+    totSeqs=taxa_sums(phy %>% prune_taxa(taxa_names(pos_control.phy),.)),
+    totPosSeqs = taxa_sums(pos_control.phy),
+    pctSeqsPos = round((100*totPosSeqs/totSeqs),4),
+    Genus=Genus
+  )
+controls.head.tab <- subset(pos_control.phy.tab, pctSeqsPos>0)
+controls.head.tab %>% kable(caption = "OTUs in positive controls, putative positive controls highlighted (OTUs not in positive controls omitted)") %>%
+  kable_styling(full_width = F) %>% 
+  row_spec(which(controls.head.tab$pctSeqsPos>6), background = "#FFCCCC")
+```
+
+OTUs that are present as more than 6% of reads in the negative controls were removed
+```{r}
+## pruning out OTUs where 6% or more of reads are in the controls (created table of pruned OTUs just to check)
+samps.phy %<>% prune_taxa(!(taxa_names(.) %in% (neg_control.phy.tab %>% filter(pctSeqsNeg>6) %>% .$OTU)),.) 
+samps.pruned.tab <- otu_table(samps.phy) %>% as.data.frame()
+```
+
+Negative and positive controls were removed
+```{r}
+samps.phy = subset_samples(samps.phy, sample != "neg" & sample != "pos")
+```
+
+Saved as new phyloseq object
+```{r}
+#Save phyloseq object
+saveRDS(samps.phy,"output/phy_ITS2/phy_ITS2.rds")
+
+#Save components for possible manual inspection
+otu_table(samps.phy) %>% write.csv("output/phy_ITS2/ITS2.OTU.table.csv")
+tax_table(samps.phy) %>% write.csv("output/phy_ITS2/ITS2.taxonomy.table.csv")
+sample_data(samps.phy) %>% write.csv("output/phy_ITS2/ITS2.sample.data.csv")
+```
+

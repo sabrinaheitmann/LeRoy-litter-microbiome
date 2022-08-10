@@ -1,0 +1,33 @@
+LeRoy
+	miseq_test.Rproj
+	processing_code - makefile
+	code 
+		compile_16S.R - remove host contamination, cluster OTUs, assign taxonomy of 16S seqs (DECIPHER) [3]
+		remove_controls_ITS2.Rmd - code that removes contamination and controls from ITS2 phyloseq object [4*]
+		denoise_ITS2.R - remove erroneous OTUs from ITS2 seqs (DADA2) [2]
+		example analysis_ITS2.R - code for PCoA and perMANOVA for ITS2 phyloseq object [5*]
+		compile_ITS2.R - remove host contamination, cluster OTUs, assign taxonomy of ITS2 seqs (DECIPHER, ITSx) [3]
+		compile_ITS1.R - remove host contamination, cluster OTUs, assign taxonomy of ITS1 seqs (DECIPHER, ITSx) [3]
+		denoise_ITS1.R - remove erroneous OTUs from ITS1 seqs [2]
+		denoise_16S.R remove erroneous OTUs from 16S seqs [2]
+		trim.sh - shell script with programs Cutadapt and Seqpurge to remove primers and adaptors from the sequences [1]
+		pheniqs.config.json - custom demultiplexing json file (did not work so used CGRB demultiplexing)
+	data 
+		meta - sample metadata
+			LeRoy_litter_metadata_3-14-22.csv - updated litter metadata
+			litterbot.csv - old metadata that included Scotts's 'bot' samples
+		Ptri_genome - P.trichocarpa genome files (not using because we need Salix genome, but probably fine to omit)
+		raw - undemultiplexed reads for custom demultiplexing (we used CGRB demultiplexing instead)
+		taxonomy_db - SILVA and UNITE databases to assign bacterial and fungal taxonomy
+	output
+		trim - output from trim.sh
+		phy_ITS2 - ITS2 phyloseq object
+		phy_ITS1 - ITS1 phyloseq object
+		phy_16S - 16S phyloseq objectd
+		figs - figs from code
+		demux - demultiplexed reads 
+		dada - output from denoise files
+		compile - scratch files for ITS1, ITS2, and 16S
+
+[#] order that code is run
+*only for ITS2 sequences. Need to adapt code for ITS1 and 16S. 
